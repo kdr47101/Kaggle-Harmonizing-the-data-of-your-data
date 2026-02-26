@@ -1,0 +1,17 @@
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Jupyter / tooling
+.ipynb_checkpoints/
+.vscode/
+.DS_Store
+
+# Logs
+*.log

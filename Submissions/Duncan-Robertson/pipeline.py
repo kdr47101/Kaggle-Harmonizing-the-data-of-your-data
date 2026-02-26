@@ -1,0 +1,27 @@
+# Example structure:
+import pandas as pd
+from src.Scoring import score
+
+def extract_sdrf(paper_text):
+    """Your extraction logic here"""
+    pass
+
+def main():
+    # Load data
+    papers = load_papers()
+
+    # Extract metadata
+    predictions = [extract_sdrf(p) for p in papers]
+
+    # Generate submission
+    submission_df = pd.DataFrame(predictions)
+    submission_df.to_csv('submission.csv', index=False)
+
+    # (Optional) Score locally if you have test labels
+    if has_test_labels():
+        solution_df = pd.read_csv('test_solution.csv')
+        eval_df, score = score(solution_df, submission_df, 'ID')
+        print(f"Local F1 Score: {score:.6f}")
+
+if __name__ == "__main__":
+    main()
