@@ -1,10 +1,19 @@
 # Example structure:
+import sys
+from pathlib import Path
+# Add project root to path so we can import src
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 import pandas as pd
 from src.Scoring import score
+from data_loader import load_papers
 
 def extract_sdrf(paper_text):
     """Your extraction logic here"""
     pass
+
+def has_test_labels():
+    return Path('test_solution.csv').exists()
 
 def main():
     # Load data
