@@ -1,4 +1,4 @@
-# Your Solution Name
+# Baseline Solution
 
 Brief description of your approach.
 
