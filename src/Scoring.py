@@ -19,6 +19,11 @@ def load_sdrf(sdrf_df: pd.DataFrame) -> Dict[str, Dict[str, List[str]]]:
         for col in pxd_df.columns:
             # Collect unique stringified values; drop NaNs safely
             uniq = pd.Series(pxd_df[col]).dropna().astype(str).unique().tolist()
+
+            # Skip harmonization for 'Not Applicable' if it's the only unique value
+            if uniq == ['Not Applicable']:
+                continue
+            
             values: List[str] = []
             for v in uniq:
                 if 'NT=' in v:
@@ -27,6 +32,8 @@ def load_sdrf(sdrf_df: pd.DataFrame) -> Dict[str, Dict[str, List[str]]]:
                 else:
                     values.append(v.strip())
             sdrf_dict[pxd][col] = values   # ← initialize (DO NOT use += before init)
+            print(f"Processing PXD={pxd}, column={col}, unique values (pre-harmonization): {values}")
+   
     return sdrf_dict
 
 
@@ -163,7 +170,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute SDRF F1 score between solution and submission dataframes")
     parser.add_argument("--solution", required=True, type=str, help="Path to solution CSV file")
     parser.add_argument("--submission", required=True, type=str, help="Path to submission CSV file")
-    parser.add_argument("--output", type=str, default="detailed_evaluation_metrics.csv", help="Path to save detailed evaluation metrics CSV")
+    parser.add_argument("--output", type=str, default="./detailed_evaluation_metrics.csv", help="Path to save detailed evaluation metrics CSV")
     args = parser.parse_args()
 
     # Load dataframes
