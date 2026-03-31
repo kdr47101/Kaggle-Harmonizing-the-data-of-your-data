@@ -1,0 +1,17 @@
+# Configuration file for the SDRF extraction pipeline
+test_pubtext_dir: "data/TestPubText"
+training_pubtext_dir: "data/TrainingPubText"
+training_sdrfs_dir: "Submissions/Duncan-Robertson/data/HarmonizedFiles"
+test_extract_dir: "Submissions/Duncan-Robertson/data/Gemini-Extract"
+training_extract_dir: "Submissions/Duncan-Robertson/data/Training-SDRF"
+submission_dir: "Submissions/Duncan-Robertson"
+
+sample_submission_file: "data/SampleSubmission.csv"
+prompt_file: "Submissions/Duncan-Robertson/data/prompt.txt"
+prompt1_file: "Submissions/Duncan-Robertson/data/Prompt_1.txt"
+prompt2_file: "Submissions/Duncan-Robertson/data/Prompt_2.txt"
+# openai_model: "gpt-5.4-mini"
+# openai_temperature: 0.0
+
+gemini_model: "gemini-2.5-pro"
+gemini_temperature: 0.0

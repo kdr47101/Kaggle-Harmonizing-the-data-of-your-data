@@ -1,0 +1,237 @@
+"""You are an expert proteomics scientist. Extract SDRF metadata from this paper.
+
+Return ONLY a JSON object. Omit fields not found. All values must be lists of strings.
+
+------------------------------------------------------------
+CHARACTERISTICS — sample-level metadata (category definitions)
+(Use keys formatted as Characteristics[<Category>], unless the item is a true experimental factor, in which case see FactorValue rules below.)
+
+Characteristics[Age]:
+  Identifier for the age of the donor/organism at sampling. Valid values may include plain numeric ages, ages with compact unit suffixes (e.g. "31Y", "30Y6M", "1726D"), spelled-out units (e.g. "6 month", "24 months"), decimal ages, or age ranges (e.g. "47Y-75Y"). Use only when the value describes age or age-at-sampling, not developmental stage alone, tumor stage/grade codes, anonymization placeholders, replicate/group IDs, or other clinical/experimental labels.
+
+Characteristics[AlkylationReagent]:
+  Identifier for the alkylation reagent used to block cysteine/free thiol groups during sample preparation. Valid values may include reagent names or abbreviations (e.g. "IAA", "iodoacetamide", "NEM"). Use only when the value describes the chemical used for alkylation, not the resulting modification itself, reduction reagent, cleavage agent, or other sample-preparation steps.
+
+Characteristics[AnatomicSiteTumor]:
+  Anatomical location from which a tumor sample was taken (e.g. “left lung lobe”).
+
+Characteristics[AncestryCategory]:
+  Identifier for the donor ancestry/ethnicity category associated with the sample. Valid values may include broad ancestry or ethnicity labels (e.g. "European", "African", "Caucasian", "Black", "White"). Use only when the value describes donor ancestry/ethnic background, not nationality, geographic sampling location, organism/species, disease, or other demographic/clinical descriptors.
+
+Characteristics[Bait]:
+  Identifier for the bait protein, construct, tag/control, or other molecule used to capture interaction partners in an affinity-purification experiment. Valid values may include protein/gene names (e.g. "nsp10", "orf3a", "EGFP"), mutant/variant bait names (e.g. "nsp5_C145A"), short study-specific bait labels (e.g. "E", "M", "N", "S"), or control/vector-style bait entries (e.g. "EV"). Use only when the value describes the affinity-purification bait or bait construct, not prey proteins, sample condition, cell line, or other experimental labels unless the paper clearly uses them as the bait annotation.
+
+Characteristics[BMI]:
+  Identifier for the donor body mass index (BMI) associated with the sample. Valid values may include plain numeric BMI values, including decimals (e.g. "26.5", "20.5", "31.2"). Use only when the value describes BMI as a donor anthropometric measurement, not body weight, age, disease status, or other numeric clinical descriptors.
+
+Characteristics[CellLine]:
+  Identifier for the named cell line, subline, clone, or cultured line used as the sample source. Valid values may include standard cell line names (e.g. "HeLa", "HEK293", "A549", "U2OS", "K562"), formatted variants with suffixes like "cells" or hyphenation, subpopulation/subclone labels (e.g. "MDAMB231 subpopulation LM2-4175"), or other study-specific named cultured lines. Use only when the value describes a named cell line/cultured line, not a primary cell type/population, tissue source, organism, or generic labels such as "pluripotent stem cell line" unless the paper clearly uses them as the cell-line identifier. Do not extract a cell line name if the proteomics samples are described as primary tissue, body fluid, or organism-part samples unless the paper explicitly states that the analyzed samples came from that cell line.
+
+Characteristics[CellPart]:
+  Identifier for the subcellular compartment, organelle, or cellular fraction from which the sample material was derived. Valid values may include compartment/organelle names (e.g. "nucleus", "cytosol", "mitochondrion"). Use only when the value describes a subcellular location or cellular fraction, not the whole cell type, tissue/organ source, fraction identifier, or general sample-preparation label.
+
+Characteristics[CellType]:
+  Identifier for the cell type or cellular identity of the actual analyzed sample. Valid values may include specific cell types or states such as "epithelial cell", "melanocyte", or "lymphoblast". Use only when the paper explicitly identifies the analyzed samples by cell type. Do not use disease names, tissue names, or broad study context terms as CellType unless the paper clearly treats them as the sample's cellular identity.
+
+Characteristics[CleavageAgent]:
+  Identifier for the protease, enzyme, or chemical cleavage reagent used to digest or cleave proteins/peptides before MS analysis. Valid values may include enzyme names (e.g. "Trypsin", "Trypsin/P", "Lys-C", "Chymotrypsin", "Arg-C", "Asp-N", "Glutamyl endopeptidase", "leukocyte elastase", "N-glycosidase F"), unspecific-cleavage labels, or ontology-formatted values containing name/accession pairs (e.g. "NT=Trypsin;AC=MS:1001251"). Use only when the value describes the digestion/cleavage reagent, not digestion conditions, missed cleavages, search-enzyme settings, or other sample-preparation steps. 
+
+Characteristics[Compound]:
+  Identifier for a chemical compound, small-molecule reagent, or compound-derived condition associated with the sample. Valid values may include named drugs/inhibitors (e.g. "CDK7 inhibitor THZ1", "MEK inhibitor U0126"), control labels (e.g. "control"), or compound-associated sample-state descriptors when used in the annotations (e.g. ontology-formatted pellet/supernatant values). Use only when the value describes a compound-based perturbation/reagent or the sample condition directly tied to that compound handling, not the general treatment description, fractionation state alone, enrichment/depletion method, or other sample-preparation labels unless the paper clearly uses them as the compound annotation.
+
+Characteristics[ConcentrationOfCompound]:
+  Concentration of the Compound used (e.g. “10 µM”).
+
+Characteristics[Depletion]:
+  Identifier for whether the sample underwent depletion of abundant components and, when stated, the resulting depleted material/state. Valid values may include depletion-status labels (e.g. "depletion", "no depletion") or depleted-sample descriptors (e.g. "depleted fraction"). Use only when the value describes removal of abundant proteins/components from the sample, not enrichment, fractionation, general cleanup, or other sample-preparation steps.
+
+Characteristics[DevelopmentalStage]:
+  Identifier for the developmental stage or age stage of the source organism/sample. Valid values may include broad stage labels (e.g. "adult", "fetus", "embryo stage") or age-range/stage designations used in the study (e.g. "9W-12W"). Use only when the value describes the organism’s developmental or life stage, not chronological age alone, strain, disease status, cell type, or other sample descriptors unless the paper clearly uses them as the developmental-stage label.
+
+Characteristics[Disease]:
+  Identifier for the disease, health state, infection status, or diagnostic condition of the actual analyzed samples. Valid values may include disease names, cancer subtypes, healthy/control states, or infection-status labels when these are explicitly assigned to the proteomics samples in this study. Use only when the value describes the condition of the analyzed sample source. Do not extract disease names mentioned only in background, motivation, literature discussion, pathway relevance, or comparisons to other cohorts. If multiple diseases are mentioned from different sample contexts, extract only the disease that belongs to the proteomics samples analyzed here.
+
+Characteristics[DiseaseTreatment]:
+  Pre-treatment applied to diseased samples (e.g. “chemotherapy”, “radiation”).
+
+Characteristics[GeneticModification]:
+  Any genetic alteration in the source organism/cells (e.g. “GFP-tagged”, “knockout of gene X”).
+
+Characteristics[Genotype]:
+  Genotypic background (e.g. “C57BL/6J”, “BRCA1-mutant”).
+
+Characteristics[GrowthRate]:
+  Identifier for the relative growth behavior or growth-rate category of the sample/cell culture. Valid values may include qualitative growth-rate labels (e.g. "slow", "medium", "fast") or explicit growth/doubling-rate descriptions when stated. Use only when the value describes how quickly the cells/sample grow, not treatment response, proliferation marker levels, cell density, viability, or other culture/sample descriptors.
+
+Characteristics[Label]:
+  Identifier for the sample labeling strategy or sample label channel actually used for the analyzed proteomics samples. Valid values may include label-free descriptors (e.g. "label free"), metabolic labels (e.g. "SILAC light", "SILAC heavy"), or isobaric tag channels (e.g. "TMT131", "TMT130N", "ITRAQ115"). Use only when the value describes the labeling state or assigned label channel of the study samples. Do not return multiple labeling strategies unless the paper explicitly states that the analyzed samples include multiple labeling regimes. If both a global labeling strategy and individual reporter channels are mentioned, prefer the sample-level label/channel that best matches the SDRF annotation.
+
+Characteristics[MaterialType]:
+  Identifier for the broad material class of the actual analyzed sample, such as "tissue", "cell line", "cell", "lysate", or "biopsy". Use only when the paper clearly states the material class of the proteomics sample source. Do not return multiple material types unless the study explicitly analyzes multiple material classes within the same run set. If a more specific source field such as OrganismPart, CellLine, or CellType is given, MaterialType should remain broad and should not mix incompatible categories from different contexts.
+
+Characteristics[Modification]:
+  Identifier for a protein or peptide modification explicitly analyzed, searched, enriched, or annotated in the experiment. Valid values may include modification names such as "Phospho", "Oxidation", "Acetyl", "Deamidated", or "Carbamidomethyl", and ontology-formatted modification entries when explicitly stated. Use only when the value describes a modification of the analyte or a database-search/enrichment modification target. Do not use this field for general labeling strategy terms such as "label free", "TMT", "iTRAQ", or "SILAC" unless the paper explicitly presents them as modification annotations rather than labeling strategy.
+
+Characteristics[NumberOfBiologicalReplicates]:
+  Total number of biological replicates in the study for samples of the same context. (Not per-sample.)
+
+Characteristics[NumberOfSamples]:
+  Total number of samples processed in total in the study. (Not per-sample.)
+
+Characteristics[NumberOfTechnicalReplicates]:
+  Identifier for the total count of technical replicate measurements associated with the sample. Valid values may include plain integers (e.g. "1", "2", "3", ...). Use only when the value gives the total number of repeat measurements/runs of the same biological sample, not the technical replicate ID for a specific run, biological replicate identifiers, fraction numbers, or other sample counts.
+
+Characteristics[Organism]:
+  Identifier for the source organism/species from which the sample was derived. Valid values may include scientific species names (e.g. "Homo sapiens", "Mus musculus", "Saccharomyces cerevisiae", "Plasmodium falciparum"), strain-qualified organism names (e.g. "Haloferax volcanii DS2"), broader taxonomic/sample-source labels when used in the annotations (e.g. "lactobacillus", "feces metagenome"), or ontology/taxonomy-formatted organism values. Use only when the value describes the biological source species or taxonomic origin of the sample, not tissue/organ source, cell type, strain alone, disease, or environmental/sample-processing descriptions.
+
+Characteristics[OrganismPart]:
+  Identifier for the anatomical part, tissue, organ, body fluid, or specimen source from which the analyzed proteomics samples were actually derived. Valid values may include organs, tissues, body fluids, or named specimen sources. Use only when the value describes the direct physical source material of the analyzed samples. Do not extract organism-part terms mentioned only as disease context, pathology context, prior literature, or biological relevance.
+
+Characteristics[OriginSiteDisease]:
+  Anatomical site of disease origin (e.g. “colon”, “prostate”).
+
+Characteristics[PooledSample]:
+  Identifier for whether the sample is a pool and, when stated, the pooled-sample label or source-sample composition. Valid values may include pooling-status labels (e.g. "pooled", "not pooled"), structured source-sample lists (e.g. "SN=sample1;SN=sample2"), or study-specific pooled-sample identifiers (e.g. "TW8-Pool7-AD ApoE4/x 17"). Use only when the value describes a sample formed by combining multiple source samples, not a replicate ID, label channel, batch/group name, or other study identifier alone.
+
+Characteristics[ReductionReagent]:
+  Identifier for the reduction reagent used to reduce disulfide bonds/free thiols during sample preparation. Valid values may include reagent names or abbreviations (e.g. "DTT", "TCEP"). Use only when the value describes the chemical used for reduction, not the alkylation reagent, resulting modification itself, cleavage agent, or other sample-preparation steps.
+
+Characteristics[SamplingTime]:
+  Identifier for the sample collection time point or study time-point label. Valid values may include plain numeric time points (e.g. "0", "1", "3"), signed/relative time labels, or compact time values with unit suffixes (e.g. "-8W", "0W", "4W", "52W"). Use only when the value describes when the sample was collected within the study/treatment timeline, not age, treatment duration alone, replicate IDs, or other numeric sample descriptors.
+
+Characteristics[Sex]:
+  Identifier for the biological sex of the donor/organism associated with the sample. Valid values may include full labels (e.g. "male", "female", "intersex") or abbreviated forms (e.g. "M", "F"). Use only when the value describes biological sex, not gender identity, anonymization/placeholders, organism/species, or other demographic/clinical descriptors.
+
+Characteristics[Specimen]:
+  Description of biological specimen (e.g. “biopsy”, “plasma”).
+
+Characteristics[SpikedCompound]:
+  Identifier for an exogenous spike-in, internal standard, or reference compound/protein mixture added to the sample. Valid values may include named standard mixtures or compounds, quantity-annotated spike-ins, or structured spike-in descriptors with fields such as species/component type/quantity/accession (e.g. "CT=mixture;QY=12500 amol;CN=UPS1;CV=Standards Research Group", "SP=Homo sapiens;CT=protein;QY=1 pmol;AC=P37840"). Use only when the value describes material intentionally added as a standard/spike-in to the sample, not endogenous sample proteins, labels, treatments, or general sample composition.
+
+Characteristics[Staining]:
+  Identifier for the staining status or stain applied to the sample before MS analysis. Valid values may include explicit no-stain labels (e.g. "unstained") or stain names/abbreviations (e.g. "H&E", "hematoxylin", "hemalum"). Use only when the value describes a stain or staining state remaining on the sample, not labeling chemistry, enrichment, treatment, or other sample-preparation steps.
+
+Characteristics[Strain]:
+  Identifier for the strain, line, isolate, or background of the source organism/sample. Valid values may include standard animal strains (e.g. "BALB/cJ", "C57BL/6J", "FVB/NJ", "A/J"), microbial/parasite strain or isolate names (e.g. "3D7"), sample line/isolate identifiers used as strain labels (e.g. "RR01", "JS27", "FH54"), or genotype-like strain names when used as the strain designation (e.g. "agl15::trp"). Use only when the value describes the named strain/background/isolate of the organism or sample, not the organism/species itself, cell line name, replicate ID, or a standalone genotype/mutation unless the paper uses it as the strain label.
+
+Characteristics[SyntheticPeptide]:
+  Identifier for whether the sample consists of or is derived from a synthetic peptide material. Valid values may include binary-style labels (e.g. "synthetic", "not synthetic"). Use only when the value describes synthetic-peptide status, not the modification type, spiked compound, treatment, or other sample descriptors.
+
+Characteristics[Temperature]:
+  Identifier for the growth, incubation, or perturbation temperature associated with the sample/condition. Valid values may include plain numeric temperature values (e.g. "30", "37", "40") or explicit temperature values with units when stated. Use only when the value describes the temperature condition applied to the sample, not instrument temperature, storage temperature, fever/clinical status, or other numeric sample descriptors.
+
+Characteristics[Time]:
+  Identifier for a broad experimental time or duration associated with the sample/condition. Valid values may include compact time values (e.g. "35m", "15m"), day-based durations/time points (e.g. "1 day", "2 days", "7 days"), or similar study time descriptors. Use only when the value describes a general time/duration condition, not sampling time within a study timeline, age, treatment identity, or other numeric sample descriptors.
+
+Characteristics[Treatment]:
+  Identifier for the experimental treatment, perturbation, stimulus, control condition, or introduced reagent/construct applied to the sample. Valid values may include treatment/control labels (e.g. "control", "control condition", "DMSO", "vector control"), drugs/inhibitors/compounds (e.g. "proteasome inhibitor MG-132", "ERK inhibitor SCH772984", "Compound 2"), stresses/stimuli (e.g. "heat shock", "IFNy"), genetic perturbations (e.g. "siKMT9#1"), or introduced proteins/constructs/overexpression conditions when used as the sample treatment label. Use only when the value describes what was done or applied to the sample, not the disease state, cell line, genotype/background alone, replicate/group ID, or other sample descriptors unless the paper clearly uses them as the treatment annotation.
+
+Characteristics[TumorCellularity]:
+  Percentage of tumor cells in the sample (e.g. “80%”).
+
+Characteristics[TumorGrade]:
+  Histological grade (e.g. “Grade II”).
+
+Characteristics[TumorSize]:
+  Identifier for the physical size measurement of the tumor associated with the sample. Valid values may include numeric size values with length units (e.g. "6.5cm", "16cm", "2.5 cm", "15 mm"). Use only when the value describes measured tumor size, not tumor stage/grade codes, metastasis status, tumor count, or other clinical descriptors.
+
+Characteristics[TumorSite]:
+  Anatomical site of tumor (e.g. “breast”, “pancreas”).
+
+Characteristics[TumorStage]:
+  Clinical staging (e.g. “Stage III”).
+
+------------------------------------------------------------
+COMMENT — data-file / protocol parameters (category definitions)
+(Use keys formatted as Comment[<Category>].)
+
+Comment[AcquisitionMethod]:
+  Identifier for the proteomics/MS data acquisition scheme used to collect the data. Valid values may include acquisition-method names or abbreviations (e.g. "DDA", "DIA", "PRM", "SRM", "SWATH-MS") or ontology-formatted method values (e.g. "NT=Data-Dependent Acquisition;AC=NCIT:C161785", "NT=Data-Independent Acquisition;AC=NCIT:C161786"). Use only when the value describes the overall acquisition strategy, not fragmentation method, instrument model, scan settings, or other acquisition/search parameters.
+
+Comment[CollisionEnergy]:
+  Identifier for the collision energy setting used for MS/MS fragmentation. Valid values may include collision-energy values with units such as NCE or eV, with or without percent notation, and may include stepped/multiple values separated by semicolons (e.g. "27 NCE", "35% NCE", "27 eV", "25%; 30%; 35% NCE"). Use only when the value describes the fragmentation collision-energy parameter, not the fragmentation method itself, activation type, instrument model, mass tolerance, or other acquisition/search settings.
+
+Comment[EnrichmentMethod]:
+  Identifier for the peptide/protein enrichment or purification method applied before MS analysis. Valid values may include enrichment methods (e.g. "TiO2", "Fe(III)-IMAC", "enrichment of phosphorylated peptides"), explicit no-enrichment labels (e.g. "no enrichment"), or ontology-formatted purification/enrichment values (e.g. "NT= Extraction purification;AC=NCIT:C113061"). Use only when the value describes a selective enrichment/purification step for target analytes, not the modification itself, cleavage agent, fractionation/separation method, or other sample-preparation/search settings.
+
+Comment[FlowRateChromatogram]:
+  LC flow rate (e.g. “300 nL/min”).
+
+Comment[FractionationMethod]:
+  Identifier for the off-line fractionation or separation method used to split the sample into fractions before LC-MS/MS analysis. Valid values may include chromatography or electrophoresis methods (e.g. "high-pH reversed-phase chromatography", "Reversed-phase chromatography", "Strong cation-exchange chromatography (SCX)", "SDS-PAGE"), abbreviated method names (e.g. "hpHRP"), or ontology-formatted method values (e.g. "NT=high pH RPLC;AC=PRIDE:0000564"). Use only when the value describes the method used to generate fractions, not the fraction ID/count, LC separation used during acquisition, or other sample-preparation/search settings.
+
+Comment[FragmentationMethod]:
+  Identifier for the MS/MS ion-fragmentation method used to generate fragment spectra. Valid values may include standard fragmentation methods (e.g. "CID", "HCD", "ETD"), hybrid/combined methods (e.g. "EThcD", "ETciD", "EThcd/ETD", "MSA SPS"), or ontology-formatted method values (e.g. "NT=collision-induced dissociation;AC=MS:1000133", "AC=MS:1000422;NT=HCD"). Use only when the value describes the fragmentation technique used for MS2 generation, not collision energy, activation settings, mass analyzer, scan mode, or other instrument/search parameters.
+
+Comment[FragmentMassTolerance]:
+  Identifier for the fragment-ion mass tolerance used in database/search matching. Valid values may include numeric tolerances with units such as Da, ppm, mmu, or m/z (e.g. "0.02 Da", "20 ppm", "50 mmu", "0.5 m/z"). Use only when the value describes the fragment/ion matching tolerance parameter, not precursor mass tolerance, mass accuracy in general, collision energy, instrument resolution, or other search settings.
+
+Comment[GradientTime]:
+  Total LC gradient length (e.g. “120 min”).
+
+Comment[Instrument]:
+  Identifier for the mass spectrometer instrument model used to acquire the data. Valid values may include instrument model names (e.g. "LTQ Orbitrap Velos", "Q Exactive", "Q Exactive HF", "Q Exactive Plus", "Q Exactive HF-X", "Orbitrap Fusion Lumos", "LTQ"), family/model variants, or ontology-formatted instrument values (e.g. "AC=MS:1001742;NT=LTQ Orbitrap Velos"). Use only when the value describes the MS instrument make/model or controlled-vocabulary instrument term, not fragmentation method, analyzer component alone, acquisition mode, software, or other instrument settings.
+
+Comment[IonizationType]:
+  Ionization source (e.g. “nanoESI”, “MALDI”).
+
+Comment[MS2MassAnalyzer]:
+  Identifier for the mass analyzer used for MS2/fragment-ion measurement. Valid values may include analyzer names (e.g. "orbitrap", "ion trap") or ontology-formatted analyzer values (e.g. "NT=orbitrap;AC=MS:1000484", "AC=MS:1000264; NT=ion trap"). Use only when the value describes the analyzer that measured MS2 spectra, not the overall instrument model, fragmentation method, acquisition mode, or other instrument settings.
+
+Comment[NumberOfMissedCleavages]:
+  Identifier for the maximum number of missed enzymatic cleavages allowed in the database/search settings. Valid values may include plain integers (e.g. "1", "2"). Use only when the value describes the search parameter for allowed missed cleavages, not the cleavage agent itself, observed peptide missed cleavages, digestion efficiency, or other search settings.
+
+Comment[NumberOfFractions]:
+  Total number of fractions generated from each sample.
+
+Comment[PrecursorMassTolerance]:
+  Identifier for the precursor-ion mass tolerance used in database/search matching. Valid values may include numeric tolerances with units such as ppm or Da (e.g. "10 ppm", "5 ppm", "1 Da", "0.01 Da"). Use only when the value describes the precursor/parent-ion matching tolerance parameter, not fragment mass tolerance, mass accuracy in general, collision energy, instrument resolution, or other search settings.
+
+Comment[Separation]:
+  Identifier for the on-line chromatographic/separation method used immediately before MS/MS analysis. Valid values may include LC/chromatography method names (e.g. "Reversed-phase chromatography", "High-performance liquid chromatography", "SAX") or ontology-formatted method values (e.g. "AC=PRIDE:0000563;NT=Reversed-phase chromatography"). Use only when the value describes the final on-line separation coupled to MS, not off-line fractionation methods, fraction IDs, or other sample-preparation/search settings.
+
+------------------------------------------------------------
+FACTORVALUE — experimental variables / compared conditions
+(Use keys formatted as FactorValue[<Category>] only when the paper explicitly treats the value as a compared experimental factor, condition, group, or variable.)
+
+FactorValue[...] fields should only contain explicitly stated experimental variables that define compared groups or conditions in the study; do not guess, and do not copy background sample descriptors unless the paper treats them as factors. If a value is mentioned only as sample background or sample annotation, place it under Characteristics[...] instead.
+
+FactorValue[Bait]:
+  The explicitly stated bait identity only when different bait constructs or bait proteins are the compared experimental conditions; extract bait names only, not assay labels or inferred targets.
+
+FactorValue[CellPart]:
+  The explicitly stated subcellular compartment used as a compared condition or variable; extract only named cell parts, not tissues, cell types, or organism parts.
+
+FactorValue[Compound]:
+  The explicitly stated chemical, drug, or treatment compound that varies between conditions; extract only the compound name, not the dose, solvent, or exposure time.
+
+FactorValue[ConcentrationOfCompound]:
+  The explicitly stated concentration of the varying compound; extract only exact concentration values with units and only when directly tied to the compound condition.
+
+FactorValue[Disease]:
+  The explicitly stated disease, healthy, or control state used as a compared condition; extract only named group labels, not symptoms, phenotypes, or inferred diagnoses.
+
+FactorValue[GeneticModification]:
+  The explicitly stated genetic alteration used as a compared condition; extract only named modifications such as knockout, knockdown, mutant, transgene, or edited genotype, not general cell line names unless the modification itself is stated.
+
+FactorValue[Temperature]:
+  The explicitly stated temperature used as a compared condition; extract only exact temperature values with units when temperature is part of the experimental design, not routine instrument or storage temperatures.
+
+FactorValue[Treatment]:
+  The explicitly stated treatment condition used as a compared variable; extract only named treatment states or interventions, not downstream effects, measurements, or inferred exposures.
+
+------------------------------------------------------------
+
+RULES:
+1. Return ONLY valid JSON - no markdown, no explanation, no ```json
+2. Only extract what is EXPLICITLY stated - do not guess
+3. For Characteristics[Modification], extract only explicitly stated analyte/search modifications or enrichment-target modifications that are clearly part of the experiment or database-search setup. Do not copy labeling strategy terms into Characteristics[Modification] unless the paper explicitly uses them as modification annotations.
+4. Do not merge incompatible sample contexts into one output. If the paper mentions multiple tissues, diseases, cell lines, or sample types from different cohorts, examples, background discussion, literature comparisons, or validation datasets, extract only the values that are explicitly described as the source material for the proteomics samples in this study.
+5. Do not list multiple values for a field unless the paper clearly states that the run set or study samples truly include multiple values for that same SDRF field.
+6. Prefer the main proteomics sample context described in the manuscript title, abstract, and methods. Ignore disease names, tissues, cell lines, or sample types that appear only in background, citations, discussion, comparison to prior work, or unrelated validation examples.
+7. When two candidate values for the same field are mutually incompatible for a single sample context (for example "brain" vs "cell line", or "label free" vs "TMT"), do not return both unless the paper explicitly states that both were part of the analyzed sample set.
+8. If a field has multiple candidate values from different contexts and the correct study context is unclear, omit the field rather than returning a mixed list.
+9. The following fields must be mutually consistent with one another: Characteristics[MaterialType], Characteristics[CellLine], Characteristics[CellType], Characteristics[OrganismPart], Characteristics[Disease]. Do not return combinations that describe different sample sources unless the paper explicitly states that the analyzed proteomics samples include all of them.
+10. If a field would otherwise contain a mixed list coming from different sample contexts, omit the field instead of returning an inconsistent list.
+
+PAPER TEXT:
